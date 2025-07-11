@@ -17,24 +17,39 @@
     </nav>
   </header>
   <div class="container">
-    <input type="text" id="search" placeholder="Search vehicles..."> <!-- Search input -->
-    <button id="searchBtn">Search</button> <!-- Search button -->
+    <input type="text" id="search" placeholder="Search vehicles...">
+    <button id="searchBtn">Search</button>
+    <button id="compareBtn" disabled>Compare Selected</button>
+    <div id="message" style="margin:10px 0;"></div>
     <table id="vehicleTable" border="1">
       <tr>
+        <th>Select</th>
         <th>ID</th>
         <th>Model</th>
         <th>Type</th>
         <th>Price</th>
+        <th>Rating</th>
         <th>Action</th>
       </tr>
       <!-- Vehicle rows go here -->
     </table>
-    <div id="error" style="color:red; margin-top:10px;"></div> <!-- Error message -->
+  </div>
+  <!-- Details modal -->
+  <div id="detailsModal" style="display:none; position:fixed; top:15%; left:25%; background:#fff; border:1px solid #000; padding:20px; z-index:10;">
+    <div id="detailsContent"></div>
+    <button onclick="$('#detailsModal').hide();">Close</button>
+  </div>
+  <!-- Compare modal -->
+  <div id="compareModal" style="display:none; position:fixed; top:10%; left:10%; background:#fff; border:1px solid #000; padding:20px; z-index:11;">
+    <div id="compareContent"></div>
+    <button onclick="$('#compareModal').hide();">Close</button>
   </div>
   <footer>
     <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
   </footer>
   <script>
+    var vehicles = []; // Store loaded vehicles
+
     $(document).ready(function(){
       loadVehicles(); // Load vehicles on page load
 
@@ -43,8 +58,29 @@
         loadVehicles(query); // Search vehicles
       });
 
-      // Fetch and display vehicles
+      // Compare button
+      $("#compareBtn").on("click", function(){
+        var selected = [];
+        $("input.vehicleSelect:checked").each(function(){
+          var id = $(this).data("id");
+          var vehicle = vehicles.find(v => v.id == id);
+          if(vehicle) selected.push(vehicle);
+        });
+        if(selected.length < 2){
+          $("#message").css("color", "red").text("Select at least two vehicles to compare.");
+          return;
+        }
+        showCompare(selected);
+      });
+
+      // Enable compare button when at least two are checked
+      $(document).on("change", "input.vehicleSelect", function(){
+        $("#compareBtn").prop("disabled", $("input.vehicleSelect:checked").length < 2);
+      });
+
+      // Ajax: fetch vehicles
       function loadVehicles(searchQuery) {
+        $("#message").text("");
         var url = "http://localhost:8080/evsystem/api/vehicles";
         if (searchQuery && searchQuery.trim() !== "") {
           url += "?search=" + encodeURIComponent(searchQuery); // With search param
@@ -52,45 +88,142 @@
         $.ajax({
           url: url,
           type: 'GET',
+          dataType: 'json',
           success: function(result){
-            var table = $("#vehicleTable");
-            table.find("tr:gt(0)").remove(); // Remove previous rows except header
-            result.forEach(function(vehicle){
-              var row = $("<tr></tr>");
-              row.append($("<td></td>").text(vehicle.id));
-              row.append($("<td></td>").text(vehicle.model));
-              row.append($("<td></td>").text(vehicle.type));
-              row.append($("<td></td>").text(vehicle.price));
-              // Add to Cart button
-              var addBtn = $("<button>Add to Cart</button>");
-              addBtn.on("click", function(){
-                addToCart(vehicle.id); // Add action
-              });
-              row.append($("<td></td>").append(addBtn));
-              table.append(row);
-            });
+            vehicles = result;
+            renderTable(result);
           },
           error: function(){
-            $("#error").text("Failed to load vehicles."); // Show error
+            $("#message").css("color", "red").text("Failed to load vehicles.");
           }
         });
       }
 
+      // Render table rows
+      function renderTable(list) {
+        var table = $("#vehicleTable");
+        table.find("tr:gt(0)").remove();
+        if(list.length === 0){
+          $("#message").css("color", "orange").text("No vehicles found.");
+        }
+        list.forEach(function(vehicle){
+          var row = $("<tr></tr>");
+          // Select for compare
+          row.append($("<td></td>").append($('<input type="checkbox" class="vehicleSelect">').data("id", vehicle.id)));
+          row.append($("<td></td>").text(vehicle.id));
+          row.append($("<td></td>").text(vehicle.model));
+          row.append($("<td></td>").text(vehicle.type));
+          row.append($("<td></td>").text(vehicle.price));
+          // Rating
+          var stars = $("<span></span>");
+          var rating = Math.round(vehicle.rating || 0);
+          for(var i=1;i<=5;i++){
+            var star = $("<span>").text(i <= rating ? "★" : "☆").css("cursor", "pointer");
+            // Rate vehicle
+            (function(i){
+              star.on("click", function(){ rateVehicle(vehicle.id, i); });
+            })(i);
+            stars.append(star);
+          }
+          row.append($("<td></td>").append(stars));
+          // Action buttons
+          var actions = $("<td></td>");
+          // Details
+          var detailsBtn = $("<button>Details</button>").on("click", function(){ showDetails(vehicle.id); });
+          actions.append(detailsBtn).append(" ");
+          // Add to Cart
+          var addBtn = $("<button>Add to Cart</button>").on("click", function(){ addToCart(vehicle.id); });
+          actions.append(addBtn).append(" ");
+          // Add to Wishlist
+          var wishBtn = $("<button>Add to Wishlist</button>").on("click", function(){ addToWishlist(vehicle.id); });
+          actions.append(wishBtn);
+          row.append(actions);
+          table.append(row);
+        });
+      }
+
+      // Vehicle details modal
+      function showDetails(id) {
+        var vehicle = vehicles.find(v => v.id == id);
+        if(!vehicle) return;
+        var html = `<h3>Vehicle Details</h3>
+          <p><b>ID:</b> ${vehicle.id}</p>
+          <p><b>Model:</b> ${vehicle.model}</p>
+          <p><b>Type:</b> ${vehicle.type}</p>
+          <p><b>Price:</b> ${vehicle.price}</p>
+          <p><b>Description:</b> ${vehicle.description || "N/A"}</p>`;
+        $("#detailsContent").html(html);
+        $("#detailsModal").show();
+      }
+
+      // Compare vehicles modal
+      function showCompare(list) {
+        var html = "<h3>Compare Vehicles</h3><table border='1'><tr><th>Field</th>";
+        list.forEach(v => { html += `<th>${v.model}</th>`; });
+        html += "</tr>";
+        ["id", "model", "type", "price", "description"].forEach(field => {
+          html += `<tr><td>${field.charAt(0).toUpperCase()+field.slice(1)}</td>`;
+          list.forEach(v => { html += `<td>${v[field] || ""}</td>`; });
+          html += "</tr>";
+        });
+        html += "</table>";
+        $("#compareContent").html(html);
+        $("#compareModal").show();
+      }
+
       // Add vehicle to cart
-      function addToCart(vehicleId) {
+      function addToCart(id) {
         $.ajax({
           url: "http://localhost:8080/evsystem/api/cart",
           type: 'POST',
           contentType: 'application/json',
-          data: JSON.stringify({vehicleId: vehicleId}),
+          data: JSON.stringify({vehicleId: id}),
+          success: function(){
+            $("#message").css("color", "green").text("Added to cart!");
+            setTimeout(function() { $("#message").text(""); }, 1200);
+          },
+          error: function(){
+            $("#message").css("color", "red").text("Failed to add to cart.");
+          }
+        });
+      }
+
+      // Add to wishlist
+      function addToWishlist(id) {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/wishlist",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({vehicleId: id}),
+          success: function(){
+            $("#message").css("color", "green").text("Added to wishlist!");
+            setTimeout(function() { $("#message").text(""); }, 1200);
+          },
+          error: function(){
+            $("#message").css("color", "red").text("Failed to add to wishlist.");
+          }
+        });
+      }
+
+      // Rate vehicle
+      function rateVehicle(id, stars) {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/vehicles/"+id+"/rate",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({rating: stars}),
           success: function(){
             alert("Added to cart!"); // Confirm add
+            loadVehicles($("#search").val()); // Reload to update rating
           },
           error: function(){
             alert("Failed to add to cart."); // Error add
           }
         });
       }
+
+      // Clear message on typing in search
+      $("#search").on("input", function() { $("#message").text(""); });
     });
   </script>
 </body>
