@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--Author: Rucheng Yao, Description: Cart page for EV System-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Your Cart</h1> <!-- Page heading -->
+    <nav>
+      <a href="signin.html">Sign In</a> <!-- Link to sign in page -->
+      <a href="catalog.html">Catalog</a> <!-- Back to catalog -->
+    </nav>
+  </header>
+  <div class="container">
+    <table id="cartTable" border="1">
+      <tr>
+        <th>ID</th>
+        <th>Model</th>
+        <th>Type</th>
+        <th>Price</th>
+        <th>Action</th> <!-- Remove from cart -->
+      </tr>
+      <!-- Cart items go here -->
+    </table>
+    <div id="total" style="margin-top:10px;">Total: $0</div> <!-- Total price -->
+    <button id="checkoutBtn">Checkout</button> <!-- Checkout button -->
+    <div id="error" style="color:red; margin-top:10px;"></div> <!-- Error message -->
+  </div>
+  <footer>
+    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+  </footer>
+  <script>
+    $(document).ready(function(){
+      loadCart(); // Load cart items
+
+      // Fetch and display cart items
+      function loadCart() {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/cart",
+          type: 'GET',
+          success: function(result){
+            var table = $("#cartTable");
+            table.find("tr:gt(0)").remove(); // Clear old rows
+            var total = 0;
+            result.forEach(function(item){
+              var row = $("<tr></tr>");
+              row.append($("<td></td>").text(item.id));
+              row.append($("<td></td>").text(item.model));
+              row.append($("<td></td>").text(item.type));
+              row.append($("<td></td>").text(item.price));
+              // Remove button
+              var removeBtn = $("<button>Remove</button>");
+              removeBtn.on("click", function(){
+                removeFromCart(item.id); // Remove action
+              });
+              row.append($("<td></td>").append(removeBtn));
+              table.append(row);
+              total += parseFloat(item.price); // Add to total
+            });
+            $("#total").text("Total: $" + total); // Show total
+          },
+          error: function(){
+            $("#error").text("Failed to load cart items."); // Show error
+          }
+        });
+      }
+
+      // Remove vehicle from cart
+      function removeFromCart(vehicleId) {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/cart/" + vehicleId,
+          type: 'DELETE',
+          success: function(){
+            loadCart(); // Refresh cart
+          },
+          error: function(){
+            alert("Failed to remove from cart."); // Error remove
+          }
+        });
+      }
+
+      // Checkout button (placeholder)
+      $("#checkoutBtn").on("click", function(){
+        alert("Checkout process coming soon!"); // Stub
+      });
+    });
+  </script>
+</body>
+</html>

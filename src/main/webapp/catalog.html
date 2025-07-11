@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--Author: Rucheng Yao, Description: Catalog page for EV System-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Catalog</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Vehicle Catalog</h1> <!-- Page heading -->
+    <nav>
+      <a href="signin.html">Sign In</a> <!-- Link to sign in page -->
+      <a href="cart.html">Cart</a> <!-- Link to cart page -->
+    </nav>
+  </header>
+  <div class="container">
+    <input type="text" id="search" placeholder="Search vehicles..."> <!-- Search input -->
+    <button id="searchBtn">Search</button> <!-- Search button -->
+    <table id="vehicleTable" border="1">
+      <tr>
+        <th>ID</th>
+        <th>Model</th>
+        <th>Type</th>
+        <th>Price</th>
+        <th>Action</th>
+      </tr>
+      <!-- Vehicle rows go here -->
+    </table>
+    <div id="error" style="color:red; margin-top:10px;"></div> <!-- Error message -->
+  </div>
+  <footer>
+    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+  </footer>
+  <script>
+    $(document).ready(function(){
+      loadVehicles(); // Load vehicles on page load
+
+      $("#searchBtn").on("click", function(){
+        var query = $("#search").val();
+        loadVehicles(query); // Search vehicles
+      });
+
+      // Fetch and display vehicles
+      function loadVehicles(searchQuery) {
+        var url = "http://localhost:8080/evsystem/api/vehicles";
+        if (searchQuery && searchQuery.trim() !== "") {
+          url += "?search=" + encodeURIComponent(searchQuery); // With search param
+        }
+        $.ajax({
+          url: url,
+          type: 'GET',
+          success: function(result){
+            var table = $("#vehicleTable");
+            table.find("tr:gt(0)").remove(); // Remove previous rows except header
+            result.forEach(function(vehicle){
+              var row = $("<tr></tr>");
+              row.append($("<td></td>").text(vehicle.id));
+              row.append($("<td></td>").text(vehicle.model));
+              row.append($("<td></td>").text(vehicle.type));
+              row.append($("<td></td>").text(vehicle.price));
+              // Add to Cart button
+              var addBtn = $("<button>Add to Cart</button>");
+              addBtn.on("click", function(){
+                addToCart(vehicle.id); // Add action
+              });
+              row.append($("<td></td>").append(addBtn));
+              table.append(row);
+            });
+          },
+          error: function(){
+            $("#error").text("Failed to load vehicles."); // Show error
+          }
+        });
+      }
+
+      // Add vehicle to cart
+      function addToCart(vehicleId) {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/cart",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({vehicleId: vehicleId}),
+          success: function(){
+            alert("Added to cart!"); // Confirm add
+          },
+          error: function(){
+            alert("Failed to add to cart."); // Error add
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

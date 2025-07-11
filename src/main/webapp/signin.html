@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--Author: Rucheng Yao, Description: Sign-in page for EV System-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Sign In</h1> <!-- Page heading -->
+  </header>
+  <div class="container"> <!-- Main content -->
+    <form id="signinForm"> <!-- Login form -->
+      <label for="username">Username or Email:</label><br>
+      <input type="text" id="username" name="username" required><br><br> <!-- Username input -->
+      
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" name="password" required><br><br> <!-- Password input -->
+      
+      <button type="submit">Sign In</button> <!-- Submit button -->
+    </form>
+    <div id="error" style="color: red; margin-top:10px;"></div> <!-- Error message -->
+  </div>
+  <footer>
+    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+  </footer>
+  <script>
+    $(document).ready(function(){
+      // Form submit
+      $("#signinForm").on("submit", function(e){
+        e.preventDefault(); // Prevent reload
+        var username = $("#username").val(); // Get username
+        var password = $("#password").val(); // Get password
+        // Send AJAX request
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/auth/signin", // Auth API
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({username: username, password: password}), // Credentials
+          success: function(result){
+            // On login success
+            window.location.href = "catalog.html"; // Redirect main
+          },
+          error: function(xhr){
+            // On login fail
+            $("#error").text("Invalid username or password."); // Show error
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
