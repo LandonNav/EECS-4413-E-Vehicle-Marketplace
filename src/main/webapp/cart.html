@@ -30,6 +30,16 @@
     <div id="total" style="margin-top:10px;">Total: $0</div> <!-- Total price -->
     <button id="checkoutBtn">Checkout</button> <!-- Checkout button -->
     <div id="error" style="color:red; margin-top:10px;"></div> <!-- Error message -->
+
+    <!-- Loan Estimation Section -->
+    <div style="margin-top:25px;">
+      <h3>Estimate Loan</h3>
+      <label>Down Payment: $<input type="number" id="downPayment" value="0" min="0"></label>
+      <label style="margin-left:20px;">Loan Term (months): <input type="number" id="loanTerm" value="60" min="1"></label>
+      <label style="margin-left:20px;">Annual Interest Rate (%): <input type="number" id="interestRate" value="5" min="0" step="0.01"></label>
+      <button id="estimateLoanBtn">Estimate</button>
+      <div id="loanResult" style="margin-top:10px; color:green;"></div> <!-- Loan estimation result -->
+    </div>
   </div>
   <footer>
     <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
@@ -62,7 +72,7 @@
               table.append(row);
               total += parseFloat(item.price); // Add to total
             });
-            $("#total").text("Total: $" + total); // Show total
+            $("#total").text("Total: $" + total.toFixed(2)); // Show total
           },
           error: function(){
             $("#error").text("Failed to load cart items."); // Show error
@@ -77,12 +87,52 @@
           type: 'DELETE',
           success: function(){
             loadCart(); // Refresh cart
+            $("#error").text(''); // Clear error
           },
           error: function(){
             alert("Failed to remove from cart."); // Error remove
           }
         });
       }
+
+      // Estimate Loan
+      $("#estimateLoanBtn").on("click", function(){
+        let total = parseFloat($("#total").text().replace(/[^0-9.]/g,"")) || 0;
+        let down = parseFloat($("#downPayment").val()) || 0;
+        let months = parseInt($("#loanTerm").val()) || 1;
+        let rate = parseFloat($("#interestRate").val()) || 0;
+
+        // Basic input validation
+        if (down >= total) {
+          $("#loanResult").css("color","red").text("Down payment must be less than total.");
+          return;
+        }
+        if (months < 1) {
+          $("#loanResult").css("color","red").text("Loan term must be at least 1 month.");
+          return;
+        }
+
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/loan/estimate",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            total: total,
+            downPayment: down,
+            loanTerm: months,
+            annualInterestRate: rate
+          }),
+          success: function(response){
+            // Expected: { monthlyPayment: number }
+            $("#loanResult").css("color","green").html(
+              "Estimated Monthly Payment: <b>$" + response.monthlyPayment.toFixed(2) + "</b>"
+            );
+          },
+          error: function(){
+            $("#loanResult").css("color","red").text("Failed to estimate loan.");
+          }
+        });
+      });
 
       // Checkout button (placeholder)
       $("#checkoutBtn").on("click", function(){
@@ -92,3 +142,5 @@
   </script>
 </body>
 </html>
+
+
