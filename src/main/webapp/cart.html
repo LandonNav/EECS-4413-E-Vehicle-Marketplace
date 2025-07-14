@@ -40,6 +40,21 @@
       <button id="estimateLoanBtn">Estimate</button>
       <div id="loanResult" style="margin-top:10px; color:green;"></div> <!-- Loan estimation result -->
     </div>
+
+    <!-- Payment Modal (hidden by default) -->
+    <div id="paymentModal" style="display:none; position:fixed; top:20%; left:35%; background:#fff; border:1px solid #000; padding:24px; z-index:100;">
+      <h3>Payment Information</h3>
+      <form id="paymentForm">
+      <label>Name on Card: <input type="text" id="cardName" required></label><br><br>
+      <label>Card Number: <input type="text" id="cardNumber" required maxlength="19" pattern="[0-9 ]{13,19}"></label><br><br>
+      <label>Expiry (MM/YY): <input type="text" id="cardExpiry" required pattern="[0-9]{2}/[0-9]{2}"></label><br><br>
+      <label>CVC: <input type="password" id="cardCVC" required maxlength="4" pattern="[0-9]{3,4}"></label><br><br>
+      <button type="submit">Pay Now</button>
+      <button type="button" id="closePaymentModal" style="margin-left:16px;">Cancel</button>
+      <div id="paymentError" style="color:red; margin-top:10px;"></div>
+      </form>
+    </div>
+
   </div>
   <footer>
     <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
@@ -134,10 +149,69 @@
         });
       });
 
-      // Checkout button (placeholder)
+      // Show payment modal on checkout click
       $("#checkoutBtn").on("click", function(){
-        alert("Checkout process coming soon!"); // Stub
+        $("#paymentError").text("");
+        $("#cardName").val("");
+        $("#cardNumber").val("");
+        $("#cardExpiry").val("");
+        $("#cardCVC").val("");
+        $("#paymentModal").show();
       });
+
+      // Hide modal on cancel
+      $("#closePaymentModal").on("click", function(){
+        $("#paymentModal").hide();
+      });
+
+      // Handle payment submission
+      $("#paymentForm").on("submit", function(e){
+        e.preventDefault();
+
+        // Simple front-end validation
+        let cardName = $("#cardName").val().trim();
+        let cardNumber = $("#cardNumber").val().replace(/\s+/g,'');
+        let cardExpiry = $("#cardExpiry").val();
+        let cardCVC = $("#cardCVC").val();
+
+        if(!cardName || !cardNumber.match(/^[0-9]{13,19}$/) || !cardExpiry.match(/^[0-9]{2}\/[0-9]{2}$/) || !cardCVC.match(/^[0-9]{3,4}$/)){
+          $("#paymentError").text("Please enter valid card details.");
+          return;
+        }
+
+      // Disable the form button during request
+      $("#paymentForm button[type='submit']").prop("disabled", true);
+
+      // Prepare data
+      let paymentData = {
+        cardName: cardName,
+        cardNumber: cardNumber,
+        cardExpiry: cardExpiry,
+        cardCVC: cardCVC
+      };
+
+      $.ajax({
+        url: "http://localhost:8080/evsystem/api/cart/checkout",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(paymentData),
+        success: function(response){
+        // On payment success, clear UI cart and close modal
+        $("#paymentModal").hide();
+        $("#cartTable tr:gt(0)").remove();
+        $("#total").text("Total: $0.00");
+        $("#loanResult").text('');
+        $("#error").css("color", "green").text("Payment successful! Thank you for your purchase.");
+        },
+        error: function(xhr){
+          $("#paymentError").text("Payment failed. Please check your card or try again.");
+        },
+        complete: function(){
+          $("#paymentForm button[type='submit']").prop("disabled", false);
+        }
+      });
+    });
+
     });
   </script>
 </body>
