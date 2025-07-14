@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--Author: Rucheng Yao, Description: User Registration page for EV System-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Register</h1> <!-- Page heading -->
+    <nav>
+      <a href="catalog.html">Catalog</a>
+      <a href="signin.html">Sign In</a>
+    </nav>
+  </header>
+  <div class="container">
+    <form id="registerForm" autocomplete="off"> <!-- Registration form -->
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required> <!-- Username input -->
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required> <!-- Email input -->
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required> <!-- Password input -->
+
+      <label for="confirmPassword">Confirm Password:</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" required> <!-- Confirm password -->
+
+      <button type="submit" id="registerBtn">Register</button> <!-- Register button -->
+    </form>
+    <div id="message" style="margin-top:10px;"></div> <!-- Success/error message -->
+  </div>
+  <footer>
+    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+  </footer>
+  <script>
+    $(document).ready(function(){
+      $("#registerForm").on("submit", function(e){
+        e.preventDefault(); // Prevent reload
+
+        $("#message").text("").css("color", "");
+        $("#registerBtn").prop("disabled", true);
+
+        var username = $("#username").val().trim();
+        var email = $("#email").val().trim();
+        var password = $("#password").val();
+        var confirmPassword = $("#confirmPassword").val();
+
+        // Basic validation
+        if (!username || !email || !password || !confirmPassword) {
+          $("#message").css("color", "red").text("Please fill in all fields.");
+          $("#registerBtn").prop("disabled", false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          $("#message").css("color", "red").text("Passwords do not match.");
+          $("#registerBtn").prop("disabled", false);
+          return;
+        }
+
+        // AJAX registration request
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/auth/register", // Registration API endpoint
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({username: username, email: email, password: password}),
+          success: function(result){
+            $("#message").css("color", "green").text("Registration successful! Please sign in.");
+            $("#registerForm")[0].reset(); // Reset form
+          },
+          error: function(xhr){
+            $("#message").css("color", "red").text("Registration failed: " + (xhr.responseText || "Try a different username/email."));
+          }
+        });
+      });
+
+      // Clear message on input
+      $("#username, #email, #password, #confirmPassword").on("input", function() {
+        $("#message").text("").css("color", "");
+      });
+    });
+  </script>
+</body>
+</html>

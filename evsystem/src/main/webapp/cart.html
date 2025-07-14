@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!--Author: Rucheng Yao, Description: Cart page for EV System-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Your Cart</h1> <!-- Page heading -->
+    <nav>
+      <a href="catalog.html">Catalog</a>
+      <a href="register.html">Register</a>
+      <a href="signin.html">Sign In</a>
+    </nav>
+  </header>
+  <div class="container">
+    <table id="cartTable" border="1">
+      <tr>
+        <th>ID</th>
+        <th>Model</th>
+        <th>Type</th>
+        <th>Price</th>
+        <th>Action</th> <!-- Remove from cart -->
+      </tr>
+      <!-- Cart items go here -->
+    </table>
+    <div id="total" style="margin-top:10px;">Total: $0</div> <!-- Total price -->
+    <button id="checkoutBtn">Checkout</button> <!-- Checkout button -->
+    <div id="error" style="color:red; margin-top:10px;"></div> <!-- Error message -->
+
+    <!-- Loan Estimation Section -->
+    <div style="margin-top:25px;">
+      <h3>Estimate Loan</h3>
+      <label>Down Payment: $<input type="number" id="downPayment" value="0" min="0"></label>
+      <label style="margin-left:20px;">Loan Term (months): <input type="number" id="loanTerm" value="60" min="1"></label>
+      <label style="margin-left:20px;">Annual Interest Rate (%): <input type="number" id="interestRate" value="5" min="0" step="0.01"></label>
+      <button id="estimateLoanBtn">Estimate</button>
+      <div id="loanResult" style="margin-top:10px; color:green;"></div> <!-- Loan estimation result -->
+    </div>
+
+    <!-- Payment Modal (hidden by default) -->
+    <div id="paymentModal" style="display:none; position:fixed; top:20%; left:35%; background:#fff; border:1px solid #000; padding:24px; z-index:100;">
+      <h3>Payment Information</h3>
+      <form id="paymentForm">
+      <label>Name on Card: <input type="text" id="cardName" required></label><br><br>
+      <label>Card Number: <input type="text" id="cardNumber" required maxlength="19" pattern="[0-9 ]{13,19}"></label><br><br>
+      <label>Expiry (MM/YY): <input type="text" id="cardExpiry" required pattern="[0-9]{2}/[0-9]{2}"></label><br><br>
+      <label>CVC: <input type="password" id="cardCVC" required maxlength="4" pattern="[0-9]{3,4}"></label><br><br>
+      <button type="submit">Pay Now</button>
+      <button type="button" id="closePaymentModal" style="margin-left:16px;">Cancel</button>
+      <div id="paymentError" style="color:red; margin-top:10px;"></div>
+      </form>
+    </div>
+
+  </div>
+  <footer>
+    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+  </footer>
+  <script>
+    $(document).ready(function(){
+      loadCart(); // Load cart items
+
+      // Fetch and display cart items
+      function loadCart() {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/cart",
+          type: 'GET',
+          success: function(result){
+            var table = $("#cartTable");
+            table.find("tr:gt(0)").remove(); // Clear old rows
+            var total = 0;
+            result.forEach(function(item){
+              var row = $("<tr></tr>");
+              row.append($("<td></td>").text(item.id));
+              row.append($("<td></td>").text(item.model));
+              row.append($("<td></td>").text(item.type));
+              row.append($("<td></td>").text(item.price));
+              // Remove button
+              var removeBtn = $("<button>Remove</button>");
+              removeBtn.on("click", function(){
+                removeFromCart(item.id); // Remove action
+              });
+              row.append($("<td></td>").append(removeBtn));
+              table.append(row);
+              total += parseFloat(item.price); // Add to total
+            });
+            $("#total").text("Total: $" + total.toFixed(2)); // Show total
+          },
+          error: function(){
+            $("#error").text("Failed to load cart items."); // Show error
+          }
+        });
+      }
+
+      // Remove vehicle from cart
+      function removeFromCart(vehicleId) {
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/cart/" + vehicleId,
+          type: 'DELETE',
+          success: function(){
+            loadCart(); // Refresh cart
+            $("#error").text(''); // Clear error
+          },
+          error: function(){
+            alert("Failed to remove from cart."); // Error remove
+          }
+        });
+      }
+
+      // Estimate Loan
+      $("#estimateLoanBtn").on("click", function(){
+        let total = parseFloat($("#total").text().replace(/[^0-9.]/g,"")) || 0;
+        let down = parseFloat($("#downPayment").val()) || 0;
+        let months = parseInt($("#loanTerm").val()) || 1;
+        let rate = parseFloat($("#interestRate").val()) || 0;
+
+        // Basic input validation
+        if (down >= total) {
+          $("#loanResult").css("color","red").text("Down payment must be less than total.");
+          return;
+        }
+        if (months < 1) {
+          $("#loanResult").css("color","red").text("Loan term must be at least 1 month.");
+          return;
+        }
+
+        $.ajax({
+          url: "http://localhost:8080/evsystem/api/loan/estimate",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            total: total,
+            downPayment: down,
+            loanTerm: months,
+            annualInterestRate: rate
+          }),
+          success: function(response){
+            // Expected: { monthlyPayment: number }
+            $("#loanResult").css("color","green").html(
+              "Estimated Monthly Payment: <b>$" + response.monthlyPayment.toFixed(2) + "</b>"
+            );
+          },
+          error: function(){
+            $("#loanResult").css("color","red").text("Failed to estimate loan.");
+          }
+        });
+      });
+
+      // Show payment modal on checkout click
+      $("#checkoutBtn").on("click", function(){
+        $("#paymentError").text("");
+        $("#cardName").val("");
+        $("#cardNumber").val("");
+        $("#cardExpiry").val("");
+        $("#cardCVC").val("");
+        $("#paymentModal").show();
+      });
+
+      // Hide modal on cancel
+      $("#closePaymentModal").on("click", function(){
+        $("#paymentModal").hide();
+      });
+
+      // Handle payment submission
+      $("#paymentForm").on("submit", function(e){
+        e.preventDefault();
+
+        // Simple front-end validation
+        let cardName = $("#cardName").val().trim();
+        let cardNumber = $("#cardNumber").val().replace(/\s+/g,'');
+        let cardExpiry = $("#cardExpiry").val();
+        let cardCVC = $("#cardCVC").val();
+
+        if(!cardName || !cardNumber.match(/^[0-9]{13,19}$/) || !cardExpiry.match(/^[0-9]{2}\/[0-9]{2}$/) || !cardCVC.match(/^[0-9]{3,4}$/)){
+          $("#paymentError").text("Please enter valid card details.");
+          return;
+        }
+
+      // Disable the form button during request
+      $("#paymentForm button[type='submit']").prop("disabled", true);
+
+      // Prepare data
+      let paymentData = {
+        cardName: cardName,
+        cardNumber: cardNumber,
+        cardExpiry: cardExpiry,
+        cardCVC: cardCVC
+      };
+
+      $.ajax({
+        url: "http://localhost:8080/evsystem/api/cart/checkout",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(paymentData),
+        success: function(response){
+        // On payment success, clear UI cart and close modal
+        $("#paymentModal").hide();
+        $("#cartTable tr:gt(0)").remove();
+        $("#total").text("Total: $0.00");
+        $("#loanResult").text('');
+        $("#error").css("color", "green").text("Payment successful! Thank you for your purchase.");
+        },
+        error: function(xhr){
+          $("#paymentError").text("Payment failed. Please check your card or try again.");
+        },
+        complete: function(){
+          $("#paymentForm button[type='submit']").prop("disabled", false);
+        }
+      });
+    });
+
+    });
+  </script>
+</body>
+</html>
+
+
