@@ -128,4 +128,46 @@ public class VehicleDAO
         } 
     } 
 
+    public List<Vehicle> filterVehicles(String type, Double minPrice, Double maxPrice, Integer minRating) {
+    // Start with a SQL query that's always true, to make appending conditions easier
+    StringBuilder sql = new StringBuilder("SELECT * FROM vehicles WHERE 1=1");
+    
+    // Dynamically add conditions if parameters are not null
+    if (type != null) sql.append(" AND type = ?");
+    if (minPrice != null) sql.append(" AND price >= ?");
+    if (maxPrice != null) sql.append(" AND price <= ?");
+    if (minRating != null) sql.append(" AND rating >= ?");
+    
+    List<Vehicle> filtered = new ArrayList<>();
+    
+    try (Connection conn = DatabaseConnection.connect(); 
+         PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+        // Bind parameters in the same order they were added
+        int index = 1;
+        if (type != null) pstmt.setString(index++, type);
+        if (minPrice != null) pstmt.setDouble(index++, minPrice);
+        if (maxPrice != null) pstmt.setDouble(index++, maxPrice);
+        if (minRating != null) pstmt.setInt(index++, minRating);
+
+        // Execute the query and build the list of vehicles
+        ResultSet rs = pstmt.executeQuery();
+        while (rs.next()) {
+            Vehicle v = new Vehicle();
+            v.setID(rs.getInt("id"));
+            v.setModel(rs.getString("model"));
+            v.setType(rs.getString("type"));
+            v.setPrice(rs.getDouble("price"));
+            v.setRating(rs.getInt("rating"));
+            filtered.add(v);
+        }
+
+    } catch (SQLException e) {
+        System.out.println(e.getMessage()); // Basic error handling
+    }
+
+    return filtered;
+}
+
+
 } 
