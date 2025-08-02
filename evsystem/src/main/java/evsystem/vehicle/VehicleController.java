@@ -53,4 +53,17 @@ public class VehicleController
     { 
         vehicleDAO.delete(id); 
     }
+
+    @GET
+@Path("/filter")
+@Produces(MediaType.APPLICATION_JSON)
+public List<Vehicle> filterVehicles(
+    @QueryParam("type") String type,
+    @QueryParam("minPrice") Double minPrice,
+    @QueryParam("maxPrice") Double maxPrice,
+    @QueryParam("minRating") Integer minRating
+) {
+    return vehicleDAO.filterVehicles(type, minPrice, maxPrice, minRating);
+}
+
 } 
