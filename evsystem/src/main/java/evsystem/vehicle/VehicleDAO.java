@@ -128,46 +128,60 @@ public class VehicleDAO
         } 
     } 
 
-    public List<Vehicle> filterVehicles(String type, Double minPrice, Double maxPrice, Integer minRating) {
-    // Start with a SQL query that's always true, to make appending conditions easier
-    StringBuilder sql = new StringBuilder("SELECT * FROM vehicles WHERE 1=1");
-    
-    // Dynamically add conditions if parameters are not null
-    if (type != null) sql.append(" AND type = ?");
-    if (minPrice != null) sql.append(" AND price >= ?");
-    if (maxPrice != null) sql.append(" AND price <= ?");
-    if (minRating != null) sql.append(" AND rating >= ?");
-    
-    List<Vehicle> filtered = new ArrayList<>();
-    
-    try (Connection conn = DatabaseConnection.connect(); 
-         PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+    public List<Vehicle> filterVehicles(String type, Double minPrice, Double maxPrice, Integer minRating, String sortBy, String order)
+    {
+        StringBuilder sql = new StringBuilder("SELECT * FROM vehicles WHERE 1=1");
 
-        // Bind parameters in the same order they were added
-        int index = 1;
-        if (type != null) pstmt.setString(index++, type);
-        if (minPrice != null) pstmt.setDouble(index++, minPrice);
-        if (maxPrice != null) pstmt.setDouble(index++, maxPrice);
-        if (minRating != null) pstmt.setInt(index++, minRating);
+        // Filtering conditions
+        if (type != null) sql.append(" AND type = ?");
+        if (minPrice != null) sql.append(" AND price >= ?");
+        if (maxPrice != null) sql.append(" AND price <= ?");
+        if (minRating != null) sql.append(" AND rating >= ?");
 
-        // Execute the query and build the list of vehicles
-        ResultSet rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Vehicle v = new Vehicle();
-            v.setID(rs.getInt("id"));
-            v.setModel(rs.getString("model"));
-            v.setType(rs.getString("type"));
-            v.setPrice(rs.getDouble("price"));
-            v.setRating(rs.getInt("rating"));
-            filtered.add(v);
+        // Validate sortBy and order to prevent SQL injection
+        List<String> validSortFields = List.of("price", "rating", "model");
+        List<String> validOrders = List.of("asc", "desc");
+
+        if (sortBy != null && validSortFields.contains(sortBy.toLowerCase()))
+        {
+            sql.append(" ORDER BY ").append(sortBy);  // safe due to validation
+
+            if (order != null && validOrders.contains(order.toLowerCase()))
+            {
+                sql.append(" ").append(order.toUpperCase());
+            } else {
+                sql.append(" ASC"); // default order
+            }
         }
 
-    } catch (SQLException e) {
-        System.out.println(e.getMessage()); // Basic error handling
+        List<Vehicle> filtered = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            if (type != null) pstmt.setString(index++, type);
+            if (minPrice != null) pstmt.setDouble(index++, minPrice);
+            if (maxPrice != null) pstmt.setDouble(index++, maxPrice);
+            if (minRating != null) pstmt.setInt(index++, minRating);
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Vehicle v = new Vehicle();
+                v.setID(rs.getInt("id"));
+                v.setModel(rs.getString("model"));
+                v.setType(rs.getString("type"));
+                v.setPrice(rs.getDouble("price"));
+                v.setRating(rs.getInt("rating"));
+                filtered.add(v);
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return filtered;
     }
 
-    return filtered;
-}
-
-
 } 
+
