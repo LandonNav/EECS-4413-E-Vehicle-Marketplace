@@ -73,7 +73,7 @@
             $("#registerForm")[0].reset(); // Reset form
           },
           error: function(xhr){
-            $("#message").css("color", "red").text("Registration failed: " + (xhr.responseText || "Try a different username/email."));
+            $("#message").css("color", "red").text((xhr.responseText || "Try a different username/email."));
           }
         });
       });

@@ -14,6 +14,10 @@
       <a href="catalog.html">Catalog</a>
       <a href="register.html">Register</a>
     </nav>
+    <div id="user-controls" style="margin:10px 0;">
+      <button id="signoutBtn" style="display:none;">Sign Out</button>
+      <span id="userStatus"></span>
+    </div>
   </header>
   <div class="container"> <!-- Main content -->
     <form id="signinForm"> <!-- Login form -->
@@ -32,6 +36,29 @@
   </footer>
   <script>
     $(document).ready(function(){
+      $.ajax({
+      url: "http://localhost:8080/evsystem/api/auth/status",
+      type: 'GET',
+      success: function(data) {
+        if (data.signedIn) {
+          $("#signoutBtn").show();
+          $("#userStatus").text("Logged in");
+        } else {
+          $("#signoutBtn").hide();
+          $("#userStatus").text("Not signed in");
+        }
+      }
+    });
+
+    $("#signoutBtn").click(function() {
+      $.ajax({
+        url: "http://localhost:8080/evsystem/api/auth/signout",
+        type: 'POST',
+        success: function() {
+          window.location.href = "signin.html";
+        }
+      });
+    });
       // Form submit
       $("#signinForm").on("submit", function(e){
         e.preventDefault(); // Prevent reload
@@ -39,19 +66,19 @@
         var password = $("#password").val(); // Get password
         // Send AJAX request
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/auth/signin", // Auth API
+          url: "http://localhost:8080/evsystem/api/auth/signin",
           type: 'POST',
           contentType: 'application/json',
-          data: JSON.stringify({username: username, password: password}), // Credentials
-          success: function(result){
-            // On login success
-            window.location.href = "catalog.html"; // Redirect main
+          data: JSON.stringify({username: username, password: password}),
+          success: function(result, status, xhr){
+            console.log("SIGNIN success:", result, status, xhr);
+            window.location.href = "catalog.html";
           },
-          error: function(xhr){
-            // On login fail
-            $("#error").text("Invalid username or password."); // Show error
+          error: function(xhr, status, error){
+          console.log("SIGNIN error:", xhr, status, error);
+          $("#error").text("Invalid username or password.");
           }
-        });
+      });
       });
     });
   </script>

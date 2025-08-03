@@ -15,6 +15,10 @@
       <a href="signin.html">Sign In</a>
       <a href="cart.html">Cart</a>
     </nav>
+    <div id="user-controls" style="margin:10px 0;">
+      <button id="signoutBtn" style="display:none;">Sign Out</button>
+      <span id="userStatus"></span>
+    </div>
   </header>
   <div class="container">
     <input type="text" id="search" placeholder="Search vehicles...">
@@ -51,6 +55,29 @@
     var vehicles = []; // Store loaded vehicles
 
     $(document).ready(function(){
+    $.ajax({
+      url: "http://localhost:8080/evsystem/api/auth/status",
+      type: 'GET',
+      success: function(data) {
+        if (data.signedIn) {
+          $("#signoutBtn").show();
+          $("#userStatus").text("Logged in");
+        } else {
+          $("#signoutBtn").hide();
+          $("#userStatus").text("Not signed in");
+        }
+      }
+    });
+
+    $("#signoutBtn").click(function() {
+      $.ajax({
+        url: "http://localhost:8080/evsystem/api/auth/signout",
+        type: 'POST',
+        success: function() {
+          window.location.href = "signin.html";
+        }
+      });
+    });
       loadVehicles(); // Load vehicles on page load
 
       $("#searchBtn").on("click", function(){
@@ -223,7 +250,7 @@
       }
 
       // Clear message on typing in search
-      $("#search").on("input", function() { $("#message").text(""); });
+      $("#search").on("input", function() { $("#message").text(""); });      
     });
   </script>
 </body>

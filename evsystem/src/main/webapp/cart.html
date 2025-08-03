@@ -15,6 +15,10 @@
       <a href="register.html">Register</a>
       <a href="signin.html">Sign In</a>
     </nav>
+    <div id="user-controls" style="margin:10px 0;">
+      <button id="signoutBtn" style="display:none;">Sign Out</button>
+      <span id="userStatus"></span>
+    </div>
   </header>
   <div class="container">
     <table id="cartTable" border="1">
@@ -61,6 +65,29 @@
   </footer>
   <script>
     $(document).ready(function(){
+      $.ajax({
+      url: "http://localhost:8080/evsystem/api/auth/status",
+      type: 'GET',
+      success: function(data) {
+        if (data.signedIn) {
+          $("#signoutBtn").show();
+          $("#userStatus").text("Logged in");
+        } else {
+          $("#signoutBtn").hide();
+          $("#userStatus").text("Not signed in");
+        }
+      }
+    });
+
+    $("#signoutBtn").click(function() {
+      $.ajax({
+        url: "http://localhost:8080/evsystem/api/auth/signout",
+        type: 'POST',
+        success: function() {
+          window.location.href = "signin.html";
+        }
+      });
+    });
       loadCart(); // Load cart items
 
       // Fetch and display cart items
