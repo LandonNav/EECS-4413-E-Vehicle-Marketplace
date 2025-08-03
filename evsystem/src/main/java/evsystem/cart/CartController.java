@@ -7,7 +7,7 @@ import java.util.*;
 @Path("/cart")  // Base path for all cart-related endpoints
 public class CartController {
 
-    // 🔧 In-memory data store to simulate a cart system.
+    // In-memory data store to simulate a cart system.
     // Key: userId, Value: list of vehicleIds they've added to their cart
     private static final Map<String, List<Integer>> cartDB = new HashMap<>();
 
@@ -35,7 +35,7 @@ public class CartController {
     }
 
     /**
-     * ❌ Removes a vehicle from a user's cart.
+     * Removes a vehicle from a user's cart.
      * Endpoint: POST /cart/remove
      * Params (form): userId, vehicleId
      */
@@ -64,4 +64,26 @@ public class CartController {
     public List<Integer> viewCart(@QueryParam("userId") String userId) {
         return cartDB.getOrDefault(userId, Collections.emptyList());
     }
+
+    @POST
+    @Path("/checkout")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String checkout(@FormParam("userId") String userId) {
+        List<Integer> userCart = cartDB.get(userId);
+
+        if (userCart == null || userCart.isEmpty()) {
+            return "Cart is empty. Cannot proceed with checkout.";
+        }
+
+        // For demonstration, assume each vehicle has a flat price of $25,000
+        double pricePerVehicle = 25000.0;
+        double total = userCart.size() * pricePerVehicle;
+
+        // After checkout, clear the user's cart
+        cartDB.put(userId, new ArrayList<>());
+
+        return "Checkout complete. Total: $" + total;
+    }
+
 }
