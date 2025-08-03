@@ -55,15 +55,20 @@ public class VehicleController
     }
 
     @GET
-@Path("/filter")
-@Produces(MediaType.APPLICATION_JSON)
-public List<Vehicle> filterVehicles(
-    @QueryParam("type") String type,
-    @QueryParam("minPrice") Double minPrice,
-    @QueryParam("maxPrice") Double maxPrice,
-    @QueryParam("minRating") Integer minRating
-) {
-    return vehicleDAO.filterVehicles(type, minPrice, maxPrice, minRating);
-}
+    @Path("/filter")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Vehicle> filterVehicles
+    (
+        @QueryParam("type") String type,
+        @QueryParam("minPrice") Double minPrice,
+        @QueryParam("maxPrice") Double maxPrice,
+        @QueryParam("minRating") Integer minRating,
+        @QueryParam("sortBy") String sortBy,            // e.g., "price", "rating"
+        @QueryParam("order") String order                // e.g., "asc", "desc"
+    ) 
+    {
+        return vehicleDAO.filterVehicles(type, minPrice, maxPrice, minRating, sortBy, order);
+    }
 
 } 
+
