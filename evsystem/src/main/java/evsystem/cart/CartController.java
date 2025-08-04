@@ -2,14 +2,13 @@ package evsystem.cart;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import java.util.*;
 
-@Path("/cart")  // Base path for all cart-related endpoints
+import java.util.List;
+
+@Path("/cart")
 public class CartController {
 
-    // In-memory data store to simulate a cart system.
-    // Key: userId, Value: list of vehicleIds they've added to their cart
-    private static final Map<String, List<Integer>> cartDB = new HashMap<>();
+    private final CartDAO cartDAO = new CartDAO();  // DAO handles persistence
 
     /**
      * Adds a vehicle to a user's cart.
@@ -21,17 +20,14 @@ public class CartController {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public String addToCart(@FormParam("userId") String userId,
                             @FormParam("vehicleId") int vehicleId) {
-        // If the user doesn't have a cart yet, create one
-        cartDB.putIfAbsent(userId, new ArrayList<>());
+        CartItem item = new CartItem(userId, vehicleId);
+        boolean success = cartDAO.addToCart(item);
 
-        List<Integer> userCart = cartDB.get(userId);
-
-        // Add the vehicle only if it's not already in the cart
-        if (!userCart.contains(vehicleId)) {
-            userCart.add(vehicleId);
+        if (success) {
+            return "Vehicle " + vehicleId + " added to cart for user " + userId;
+        } else {
+            return "Vehicle " + vehicleId + " is already in the cart for user " + userId;
         }
-
-        return "Vehicle " + vehicleId + " added to cart for user " + userId;
     }
 
     /**
@@ -44,9 +40,9 @@ public class CartController {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public String removeFromCart(@FormParam("userId") String userId,
                                  @FormParam("vehicleId") int vehicleId) {
-        List<Integer> userCart = cartDB.get(userId);
+        boolean removed = cartDAO.removeFromCart(userId, vehicleId);
 
-        if (userCart != null && userCart.remove(Integer.valueOf(vehicleId))) {
+        if (removed) {
             return "Vehicle " + vehicleId + " removed from cart for user " + userId;
         } else {
             return "Vehicle " + vehicleId + " not found in user " + userId + "'s cart.";
@@ -54,33 +50,34 @@ public class CartController {
     }
 
     /**
-     * View the cart contents for a user.
+     * View all vehicles in a user's cart.
      * Endpoint: GET /cart/view?userId=xyz
-     * Returns: List of vehicleIds in the user's cart (JSON)
      */
     @GET
     @Path("/view")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Integer> viewCart(@QueryParam("userId") String userId) {
-        return cartDB.getOrDefault(userId, Collections.emptyList());
+        return cartDAO.getCartVehicleIds(userId);
     }
 
+    /**
+     * Checkout the cart for a user.
+     * Clears the cart after checkout.
+     */
     @POST
     @Path("/checkout")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public String checkout(@FormParam("userId") String userId) {
-        List<Integer> userCart = cartDB.get(userId);
+        List<Integer> items = cartDAO.getCartVehicleIds(userId);
 
-        if (userCart == null || userCart.isEmpty()) {
+        if (items.isEmpty()) {
             return "{\"status\":\"error\",\"message\":\"Cart is empty or does not exist for user " + userId + "\"}";
         }
 
-        int itemCount = userCart.size();
-        cartDB.remove(userId);  // Clear cart after checkout
+        int count = items.size();
+        cartDAO.clearCart(userId);
 
-        return "{\"status\":\"success\",\"message\":\"Checkout completed for user " + userId + " with " + itemCount + " items.\"}";
+        return "{\"status\":\"success\",\"message\":\"Checkout completed for user " + userId + " with " + count + " items.\"}";
     }
-
-
 }
