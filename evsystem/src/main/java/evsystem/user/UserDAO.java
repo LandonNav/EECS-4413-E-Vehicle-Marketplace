@@ -120,5 +120,9 @@ public class UserDAO {
         try { user.setType(rs.getString("type")); } catch (Exception ignored) {}
         return user;
     }
+    
+    public User read(int id) {
+        return findById(id);
+    }
 }
 

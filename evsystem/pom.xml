@@ -16,7 +16,6 @@
   </properties>
 
   <dependencies>
-    <!-- Jersey Core & JSON -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
@@ -37,15 +36,19 @@
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
 
-    <!-- SQLite JDBC -->
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
       <version>3.44.1.0</version>
     </dependency>
-
-    <!-- Jakarta Servlet API (Provided by Tomcat) -->
+    
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
@@ -55,9 +58,8 @@
   </dependencies>
 
   <build>
-    <finalName>evsystem</finalName> <!-- this will generate evsystem.war -->
+    <finalName>evsystem</finalName> 
     <plugins>
-      <!-- WAR Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -67,7 +69,6 @@
         </configuration>
       </plugin>
 
-      <!-- Java Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
