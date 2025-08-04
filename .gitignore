@@ -11,3 +11,6 @@ evsystem/target/evsystem-0.0.1-SNAPSHOT.jar
 evsystem/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
 evsystem/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
 evsystem/vehicles.db
+evsystem/target/classes/evsystem/user/User.class
+evsystem/target/classes/evsystem/user/UserController.class
+evsystem/target/classes/evsystem/user/UserDAO.class
