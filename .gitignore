@@ -1,3 +1,5 @@
 evsystem/target/classes/META-INF/maven/org.yorku/evsystem/pom.properties
 evsystem/target/classes/META-INF/maven/org.yorku/evsystem/pom.properties
 evsystem/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+evsystem/target/classes/evsystem/vehicle/Vehicle.class
+evsystem/target/classes/evsystem/vehicle/VehicleDAO.class
