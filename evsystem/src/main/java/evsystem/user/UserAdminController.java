@@ -4,7 +4,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/users")
+@Path("/admin/users")
 public class UserAdminController {
     private UserDAO userDAO = new UserDAO();
 
