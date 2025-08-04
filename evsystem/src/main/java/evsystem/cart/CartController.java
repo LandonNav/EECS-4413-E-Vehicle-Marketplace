@@ -50,16 +50,18 @@ public class CartController {
      */
     @POST
     @Path("/remove")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public String removeFromCart(@FormParam("userId") String userId,
-                                 @FormParam("vehicleId") int vehicleId) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String removeFromCart(Map<String, Object> data) {
+        String userId = (String) data.getOrDefault("userId", "guest");
+        int vehicleId = ((Number) data.get("vehicleId")).intValue();
 
         List<Integer> userCart = cartDB.get(userId);
 
         if (userCart != null && userCart.remove(Integer.valueOf(vehicleId))) {
-            return "Vehicle removed from cart.";
+            return "{\"message\":\"Vehicle removed from cart.\"}";
         } else {
-            return "Vehicle not found in cart.";
+            return "{\"message\":\"Vehicle not found in cart.\"}";
         }
     }
 
