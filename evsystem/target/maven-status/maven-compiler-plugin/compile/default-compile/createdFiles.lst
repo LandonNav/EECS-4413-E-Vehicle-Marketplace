@@ -1,7 +1,0 @@
-evsystem\user\UserDAO.class
-evsystem\database\DatabaseConnection.class
-evsystem\vehicle\VehicleDAO.class
-evsystem\vehicle\Vehicle.class
-evsystem\vehicle\VehicleController.class
-evsystem\user\User.class
-evsystem\user\UserController.class
