@@ -43,7 +43,8 @@ public class UserController {
             if (user != null && BCrypt.checkpw(loginRequest.getPassword(), user.getPasswordHash())) {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("userId", user.getId());
-                return jsonOk("Signed in");
+                String json = String.format("{\"message\":\"Signed in\",\"userId\":%d}", user.getId());
+                return Response.ok(json).type(MediaType.APPLICATION_JSON).build();
             } else {
                 return jsonError(Response.Status.UNAUTHORIZED, "Invalid username or password.");
             }
@@ -71,7 +72,13 @@ public class UserController {
     public Response status(@Context HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         boolean signedIn = (session != null && session.getAttribute("userId") != null);
-        String json = "{\"signedIn\":" + signedIn + "}";
+        Integer userId = (signedIn) ? (Integer) session.getAttribute("userId") : null;
+        String json;
+        if (signedIn) {
+            json = String.format("{\"signedIn\":true,\"userId\":%d}", userId);
+        } else {
+            json = "{\"signedIn\":false}";
+        }
         return Response.ok(json).type(MediaType.APPLICATION_JSON).build();
     }
 

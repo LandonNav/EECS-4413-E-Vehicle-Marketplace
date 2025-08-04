@@ -51,6 +51,7 @@
   <footer>
     <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
   </footer>
+
   <script>
     var vehicles = []; // Store loaded vehicles
 
@@ -62,6 +63,9 @@
         if (data.signedIn) {
           $("#signoutBtn").show();
           $("#userStatus").text("Logged in");
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId);
+          }
         } else {
           $("#signoutBtn").hide();
           $("#userStatus").text("Not signed in");
@@ -200,11 +204,12 @@
 
       // Add vehicle to cart
       function addToCart(id) {
+        var userId = localStorage.getItem('userId') || 'guest';
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/cart",
+          url: "http://localhost:8080/evsystem/api/cart/add",
           type: 'POST',
           contentType: 'application/json',
-          data: JSON.stringify({vehicleId: id}),
+          data: JSON.stringify({vehicleId: id, userId: userId}),
           success: function(){
             $("#message").css("color", "green").text("Added to cart!");
             setTimeout(function() { $("#message").text(""); }, 1200);

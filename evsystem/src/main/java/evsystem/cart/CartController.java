@@ -23,21 +23,23 @@ public class CartController {
      */
     @POST
     @Path("/add")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public String addToCart(@FormParam("userId") String userId,
-                            @FormParam("vehicleId") int vehicleId) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String addToCart(Map<String, Object> data) {
+        String userId = "guest"; // Default if not sent
+        if (data.containsKey("userId")) {
+            userId = (String) data.get("userId");
+        }
+        int vehicleId = ((Number) data.get("vehicleId")).intValue();
 
-        // If user has no cart yet, create one
         cartDB.putIfAbsent(userId, new ArrayList<>());
-
         List<Integer> userCart = cartDB.get(userId);
 
-        // Add vehicle if not already present
         if (!userCart.contains(vehicleId)) {
             userCart.add(vehicleId);
-            return "Vehicle " + vehicleId + " added to cart for user " + userId;
+            return "{\"message\":\"Vehicle " + vehicleId + " added to cart for user " + userId + "\"}";
         } else {
-            return "Vehicle already in cart.";
+            return "{\"message\":\"Vehicle already in cart.\"}";
         }
     }
 
@@ -80,9 +82,11 @@ public class CartController {
      */
     @POST
     @Path("/checkout")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String checkout(@FormParam("userId") String userId) {
+    public String checkout(Map<String, Object> paymentData) {
+        // Retrieve userId
+        String userId = paymentData.get("userId") != null ? paymentData.get("userId").toString() : "guest";
         List<Integer> items = cartDB.get(userId);
 
         if (items == null || items.isEmpty()) {
@@ -96,4 +100,5 @@ public class CartController {
 
         return "{\"status\":\"success\",\"message\":\"Checkout completed with " + count + " item(s).\"}";
     }
+
 }

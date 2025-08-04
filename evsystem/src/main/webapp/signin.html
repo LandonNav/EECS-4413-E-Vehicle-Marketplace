@@ -43,6 +43,9 @@
         if (data.signedIn) {
           $("#signoutBtn").show();
           $("#userStatus").text("Logged in");
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId);
+          }
         } else {
           $("#signoutBtn").hide();
           $("#userStatus").text("Not signed in");
