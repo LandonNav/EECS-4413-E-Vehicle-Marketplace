@@ -6,6 +6,8 @@ public class User {
     private String email;
     private String password;
     private String passwordHash; 
+    private String type;
+
 
     public User() {}
 
@@ -36,6 +38,10 @@ public class User {
         return password;
     }
 
+    public String getType()  {
+		return type;
+	}
+
     public void setId(int id) {
         this.id = id;
     }
@@ -55,4 +61,9 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public void setType(String newType)  {
+		this.type = newType;
+	}
 }
+
