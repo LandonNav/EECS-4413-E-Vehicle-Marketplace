@@ -68,22 +68,19 @@ public class CartController {
     @POST
     @Path("/checkout")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String checkout(@FormParam("userId") String userId) {
         List<Integer> userCart = cartDB.get(userId);
 
         if (userCart == null || userCart.isEmpty()) {
-            return "Cart is empty. Cannot proceed with checkout.";
+            return "{\"status\":\"error\",\"message\":\"Cart is empty or does not exist for user " + userId + "\"}";
         }
 
-        // For demonstration, assume each vehicle has a flat price of $25,000
-        double pricePerVehicle = 25000.0;
-        double total = userCart.size() * pricePerVehicle;
+        int itemCount = userCart.size();
+        cartDB.remove(userId);  // Clear cart after checkout
 
-        // After checkout, clear the user's cart
-        cartDB.put(userId, new ArrayList<>());
-
-        return "Checkout complete. Total: $" + total;
+        return "{\"status\":\"success\",\"message\":\"Checkout completed for user " + userId + " with " + itemCount + " items.\"}";
     }
+
 
 }
