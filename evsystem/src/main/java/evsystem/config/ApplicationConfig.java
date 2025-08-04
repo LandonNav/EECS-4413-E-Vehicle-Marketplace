@@ -8,25 +8,29 @@ import java.util.Set;
 
 import evsystem.vehicle.VehicleController;
 import evsystem.cart.CartController;
+import evsystem.review.ReviewController; // ✅ Import review controller
 
 /**
- * ApplicationConfig is the configuration class for the JAX-RS application.
- * It defines the base URI for REST endpoints and registers all available resource classes.
+ * ApplicationConfig sets the base URI for all RESTful endpoints and registers resource classes.
+ * This class extends jakarta.ws.rs.core.Application and specifies which resource classes 
+ * (controllers) should be included in the JAX-RS application.
  */
-@ApplicationPath("/webapi") // All REST endpoints will be accessible under /webapi
+@ApplicationPath("/webapi")  // All REST APIs will be accessible under this base URI
 public class ApplicationConfig extends Application {
 
     /**
-     * Returns a set of all resource classes to be included in the application.
-     * These classes contain RESTful endpoints which will be made accessible to the client.
+     * Registers all controller classes that define REST endpoints.
+     *
+     * @return Set of classes annotated with JAX-RS annotations
      */
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<>();
 
-        // Register all REST controllers here so that JAX-RS recognizes them
-        resources.add(VehicleController.class); // Controller for vehicle-related endpoints
-        resources.add(CartController.class);    // Controller for shopping cart functionality
+        // Register REST resource classes
+        resources.add(VehicleController.class); // Vehicle listing, filtering, etc.
+        resources.add(CartController.class);    // Shopping cart (in-memory)
+        resources.add(ReviewController.class);  // ✅ Review submission and retrieval
 
         return resources;
     }
