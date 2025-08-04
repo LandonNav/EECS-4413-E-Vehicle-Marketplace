@@ -1,3 +1,6 @@
+// NOTE: This class is preserved for future support of database-backed cart persistence.
+// Currently not used — the CartController uses an in-memory solution for demo purposes.
+
 package evsystem.cart;
 
 import evsystem.database.DatabaseConnection;
