@@ -69,5 +69,19 @@
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
 		<welcome-file>signin.html</welcome-file>
+		<welcome-file>calculator.html</welcome-file>
 	</welcome-file-list>
+
+	<context-param> 
+		<param-name>defaultinterestRate</param-name> 
+		<param-value>13</param-value> 
+	</context-param>
+	<context-param> 
+		<param-name>defaultnumMonths</param-name> 
+		<param-value>1</param-value> 
+	</context-param>
+	<context-param> 
+		<param-name>defaultmonthlyPayment</param-name> 
+		<param-value>1</param-value> 
+	</context-param>
 </web-app>
