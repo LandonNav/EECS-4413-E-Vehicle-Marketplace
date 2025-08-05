@@ -64,7 +64,7 @@
 
         // AJAX registration request
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/auth/register", // Registration API endpoint
+          url: "/api/auth/register", // Registration API endpoint
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({username: username, email: email, password: password}),
@@ -73,7 +73,8 @@
             $("#registerForm")[0].reset(); // Reset form
           },
           error: function(xhr){
-            $("#message").css("color", "red").text("Registration failed: " + (xhr.responseText || "Try a different username/email."));
+            $("#message").css("color", "red").text((xhr.responseText || "Try a different username/email."));
+            $("#registerBtn").prop("disabled", false);
           }
         });
       });

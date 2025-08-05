@@ -1,1 +1,15 @@
-evsystem/vehicles.db
+target/
+*.class
+*.iml
+.idea/
+out/
+.classpath
+.project
+.settings/
+.DS_Store
+users.db
+vehicles.db
+*.log
+.vscode/
+*.env
+

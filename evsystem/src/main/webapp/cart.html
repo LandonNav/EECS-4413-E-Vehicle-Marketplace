@@ -17,6 +17,10 @@
       <a href="calculator.html">Loan Calculator</a>
       <a href="chatbot.html">Chatbot</a>
     </nav>
+    <div id="user-controls" style="margin:10px 0;">
+      <button id="signoutBtn" style="display:none;">Sign Out</button>
+      <span id="userStatus"></span>
+    </div>
   </header>
   <div class="container">
     <table id="cartTable" border="1">
@@ -63,54 +67,103 @@
   </footer>
   <script>
     $(document).ready(function(){
+      $.ajax({
+      url: "/api/auth/status",
+      type: 'GET',
+      success: function(data) {
+        if (data.signedIn) {
+          $("#signoutBtn").show();
+          $("#userStatus").text("Logged in");
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId);
+          }
+        } else {
+          $("#signoutBtn").hide();
+          $("#userStatus").text("Not signed in");
+        }
+      }
+    });
+
+    $("#signoutBtn").click(function() {
+      $.ajax({
+        url: "/api/auth/signout",
+        type: 'POST',
+        success: function() {
+          window.location.href = "signin.html";
+        }
+      });
+    });
       loadCart(); // Load cart items
 
       // Fetch and display cart items
       function loadCart() {
+        var userId = localStorage.getItem('userId') || 'guest';
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/cart",
+        url: "/api/cart/view?userId=" + encodeURIComponent(userId),
+        type: 'GET',
+        success: function(result){
+        var table = $("#cartTable");
+        table.find("tr:gt(0)").remove(); // Clear old rows
+        var total = 0;
+        if (result.length === 0) {
+          $("#total").text("Total: $0.00");
+          return;
+        }
+        // Assume result is an array of vehicle IDs
+        var countLoaded = 0;
+        result.forEach(function(vehicleId){
+        // For each vehicleId, fetch vehicle details
+        $.ajax({
+          url: "/api/vehicles/" + vehicleId,
           type: 'GET',
-          success: function(result){
-            var table = $("#cartTable");
-            table.find("tr:gt(0)").remove(); // Clear old rows
-            var total = 0;
-            result.forEach(function(item){
-              var row = $("<tr></tr>");
-              row.append($("<td></td>").text(item.id));
-              row.append($("<td></td>").text(item.model));
-              row.append($("<td></td>").text(item.type));
-              row.append($("<td></td>").text(item.price));
-              // Remove button
-              var removeBtn = $("<button>Remove</button>");
-              removeBtn.on("click", function(){
-                removeFromCart(item.id); // Remove action
-              });
-              row.append($("<td></td>").append(removeBtn));
-              table.append(row);
-              total += parseFloat(item.price); // Add to total
+          success: function(vehicle){
+            var row = $("<tr></tr>");
+            row.append($("<td></td>").text(vehicle.id));
+            row.append($("<td></td>").text(vehicle.model));
+            row.append($("<td></td>").text(vehicle.type));
+            row.append($("<td></td>").text(vehicle.price));
+            var removeBtn = $("<button>Remove</button>");
+            removeBtn.on("click", function(){
+              removeFromCart(vehicle.id); // Remove action
             });
-            $("#total").text("Total: $" + total.toFixed(2)); // Show total
-          },
-          error: function(){
-            $("#error").text("Failed to load cart items."); // Show error
+            row.append($("<td></td>").append(removeBtn));
+            table.append(row);
+            total += parseFloat(vehicle.price); // Add to total
+
+            countLoaded++;
+            // After all rows loaded, set total
+            if(countLoaded === result.length) {
+              $("#total").text("Total: $" + total.toFixed(2));
+            }
           }
         });
-      }
+      });
+    },
+    error: function(){
+      $("#error").text("Failed to load cart items."); // Show error
+    }
+  });
+}
+
 
       // Remove vehicle from cart
       function removeFromCart(vehicleId) {
-        $.ajax({
-          url: "http://localhost:8080/evsystem/api/cart/" + vehicleId,
-          type: 'DELETE',
-          success: function(){
-            loadCart(); // Refresh cart
-            $("#error").text(''); // Clear error
-          },
-          error: function(){
-            alert("Failed to remove from cart."); // Error remove
-          }
-        });
+      var userId = localStorage.getItem('userId') || 'guest';
+      $.ajax({
+        url: "/api/cart/remove",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({userId: userId, vehicleId: vehicleId}),
+        success: function(){
+          loadCart(); // Refresh cart
+          $("#error").text(''); // Clear error
+        },
+      error: function(){
+        alert("Failed to remove from cart."); // Error remove
       }
+    });
+  }
+
 
       // Estimate Loan
       $("#estimateLoanBtn").on("click", function(){
@@ -130,7 +183,7 @@
         }
 
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/loan/estimate",
+          url: "/api/loan/estimate",
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify({
@@ -185,15 +238,18 @@
       $("#paymentForm button[type='submit']").prop("disabled", true);
 
       // Prepare data
+      let userId = localStorage.getItem('userId') || 'guest';
       let paymentData = {
+        userId: userId,
         cardName: cardName,
         cardNumber: cardNumber,
         cardExpiry: cardExpiry,
         cardCVC: cardCVC
       };
 
+
       $.ajax({
-        url: "http://localhost:8080/evsystem/api/cart/checkout",
+        url: "/api/cart/checkout",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify(paymentData),
