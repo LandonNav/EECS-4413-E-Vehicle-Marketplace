@@ -12,3 +12,4 @@ vehicles.db
 *.log
 .vscode/
 *.env
+
