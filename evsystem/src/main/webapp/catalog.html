@@ -57,7 +57,7 @@
 
     $(document).ready(function(){
     $.ajax({
-      url: "http://localhost:8080/evsystem/api/auth/status",
+      url: "/api/auth/status",
       type: 'GET',
       success: function(data) {
         if (data.signedIn) {
@@ -75,7 +75,7 @@
 
     $("#signoutBtn").click(function() {
       $.ajax({
-        url: "http://localhost:8080/evsystem/api/auth/signout",
+        url: "/api/auth/signout",
         type: 'POST',
         success: function() {
           window.location.href = "signin.html";
@@ -112,7 +112,7 @@
       // Ajax: fetch vehicles
       function loadVehicles(searchQuery) {
         $("#message").text("");
-        var url = "http://localhost:8080/evsystem/api/vehicles";
+        var url = "/api/vehicles";
         if (searchQuery && searchQuery.trim() !== "") {
           url += "?search=" + encodeURIComponent(searchQuery); // With search param
         }
@@ -206,7 +206,7 @@
       function addToCart(id) {
         var userId = localStorage.getItem('userId') || 'guest';
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/cart/add",
+          url: "/api/cart/add",
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({vehicleId: id, userId: userId}),
@@ -223,7 +223,7 @@
       // Add to wishlist
       function addToWishlist(id) {
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/wishlist",
+          url: "/api/wishlist",
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({vehicleId: id}),
@@ -240,7 +240,7 @@
       // Rate vehicle
       function rateVehicle(id, stars) {
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/vehicles/"+id+"/rate",
+          url: "/api/vehicles/"+id+"/rate",
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({rating: stars}),

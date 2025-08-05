@@ -66,7 +66,7 @@
   <script>
     $(document).ready(function(){
       $.ajax({
-      url: "http://localhost:8080/evsystem/api/auth/status",
+      url: "/api/auth/status",
       type: 'GET',
       success: function(data) {
         if (data.signedIn) {
@@ -84,7 +84,7 @@
 
     $("#signoutBtn").click(function() {
       $.ajax({
-        url: "http://localhost:8080/evsystem/api/auth/signout",
+        url: "/api/auth/signout",
         type: 'POST',
         success: function() {
           window.location.href = "signin.html";
@@ -97,7 +97,7 @@
       function loadCart() {
         var userId = localStorage.getItem('userId') || 'guest';
         $.ajax({
-        url: "http://localhost:8080/evsystem/api/cart/view?userId=" + encodeURIComponent(userId),
+        url: "/api/cart/view?userId=" + encodeURIComponent(userId),
         type: 'GET',
         success: function(result){
         var table = $("#cartTable");
@@ -112,7 +112,7 @@
         result.forEach(function(vehicleId){
         // For each vehicleId, fetch vehicle details
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/vehicles/" + vehicleId,
+          url: "/api/vehicles/" + vehicleId,
           type: 'GET',
           success: function(vehicle){
             var row = $("<tr></tr>");
@@ -148,7 +148,7 @@
       function removeFromCart(vehicleId) {
       var userId = localStorage.getItem('userId') || 'guest';
       $.ajax({
-        url: "http://localhost:8080/evsystem/api/cart/remove",
+        url: "/api/cart/remove",
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({userId: userId, vehicleId: vehicleId}),
@@ -181,7 +181,7 @@
         }
 
         $.ajax({
-          url: "http://localhost:8080/evsystem/api/loan/estimate",
+          url: "/api/loan/estimate",
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify({
@@ -247,7 +247,7 @@
 
 
       $.ajax({
-        url: "http://localhost:8080/evsystem/api/cart/checkout",
+        url: "/api/cart/checkout",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify(paymentData),
