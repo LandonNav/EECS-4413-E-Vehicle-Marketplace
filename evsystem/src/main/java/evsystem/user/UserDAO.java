@@ -38,13 +38,12 @@ public class UserDAO {
     }
 
     public void create(User user) {
-        String sql = "INSERT INTO users (username, email, passwordHash, type) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, email, passwordHash) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPasswordHash());
-            stmt.setString(4, user.getType()); // Add this if you support user type/role
             stmt.executeUpdate();
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
