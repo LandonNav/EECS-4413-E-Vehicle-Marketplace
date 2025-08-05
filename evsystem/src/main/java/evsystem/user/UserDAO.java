@@ -1,127 +1,127 @@
 package evsystem.user;
 
-import java.sql.*; 
-import java.util.ArrayList; 
+import evsystem.database.DatabaseConnection;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
-import evsystem.database.DatabaseConnection; 
 
-public class UserDAO 
-{ 
-    public List<User> readAll() 
-    { 
-        String sql = "SELECT id, username, password, type FROM users"; 
-        List<User> users = new ArrayList<>(); 
+public class UserDAO {
 
-        try (Connection conn = DatabaseConnection.connect(); 
-             Statement stmt  = conn.createStatement(); 
-             ResultSet rs    = stmt.executeQuery(sql))
-        { 
-            while (rs.next()) 
-            { 
-                User user = new User(); 
-                
-                user.setID(rs.getInt("id")); 
-                user.setName(rs.getString("username")); 
-                user.setPassword(rs.getString("password")); 
-                user.setType(rs.getString("type")); 
-                
-                users.add(user); 
-            } 
-        } 
-        catch (SQLException e) 
-        { 
-            System.out.println(e.getMessage()); 
-        } 
-        return users; 
-    } 
+    public User findByUsernameOrEmail(String usernameOrEmail) {
+        String sql = "SELECT * FROM users WHERE username = ? OR email = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, usernameOrEmail);
+            stmt.setString(2, usernameOrEmail);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToUser(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-    public void create(User user) 
-    { 
-        String sql = "INSERT INTO users(id, usename, password, type) VALUES(?,?,?,?)"; 
+    public boolean existsByUsernameOrEmail(String username, String email) {
+        String sql = "SELECT id FROM users WHERE username = ? OR email = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, email);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-        try (Connection conn = DatabaseConnection.connect(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql)) 
-        { 
-            pstmt.setInt(1, user.getID()); 
-            pstmt.setString(2, user.getName()); 
-            pstmt.setString(3, user.getPassword());
-            pstmt.setString(4,  user.getType());
-            pstmt.executeUpdate(); 
-        } 
-        catch (SQLException e) 
-        { 
-            System.out.println(e.getMessage()); 
-        } 
-    } 
+    public void create(User user) {
+        String sql = "INSERT INTO users (username, email, passwordHash) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getEmail());
+            stmt.setString(3, user.getPasswordHash());
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                user.setId(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public User read(int id) 
-    { 
-        String sql = "SELECT username, password, type FROM users WHERE id = ?"; 
-        User user = null; 
+    public User findById(int id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToUser(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-        try (Connection conn = DatabaseConnection.connect(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql)) 
-        { 
-            pstmt.setInt(1, id); 
-            try (ResultSet rs = pstmt.executeQuery()) 
-            { 
-                // Check if a result was returned 
-                if (rs.next()) 
-                { 
-                    user = new User(); 
-                    // Set the properties of the student object 
-                    user.setID(id); 
-                    user.setName(rs.getString("username")); 
-                    user.setPassword(rs.getString("password")); 
-                    user.setType(rs.getString("type"));
-                } 
-            } 
-        } 
-        catch (SQLException e) 
-        { 
-            System.out.println(e.getMessage()); 
-        } 
+    public List<User> readAll() {
+        String sql = "SELECT * FROM users";
+        List<User> users = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
 
-        return user; 
-    } 
+    public void update(int id, User user) {
+        String sql = "UPDATE users SET username = ?, email = ?, passwordHash = ?, type = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getEmail());
+            stmt.setString(3, user.getPasswordHash());
+            stmt.setString(4, user.getType());
+            stmt.setInt(5, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public void update(int id, User user) 
-    { 
-        String sql = "UPDATE users SET username = ?, password = ?, type = ? WHERE id = ?"; 
-         
-        try (Connection conn = DatabaseConnection.connect(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql)) 
-        { 
-            // Set the corresponding parameters 
-            pstmt.setString(1, user.getName()); 
-            pstmt.setString(2, user.getPassword()); 
-            pstmt.setString(3, user.getType());
-            pstmt.setInt(4, id); 
-            // Update the user record 
-            pstmt.executeUpdate(); 
-        } 
-        catch (SQLException e) 
-        { 
-            System.out.println(e.getMessage()); 
-        } 
-    } 
- 
-    public void delete(int id) 
-    { 
-        String sql = "DELETE FROM users WHERE id = ?"; 
-         
-        try (Connection conn = DatabaseConnection.connect(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql)) 
-        { 
-            // Set the corresponding parameter 
-            pstmt.setInt(1, id); 
-            // Delete the user record 
-            pstmt.executeUpdate(); 
-        } 
-        catch (SQLException e) 
-        { 
-            System.out.println(e.getMessage()); 
-        } 
-    } 
+    public void delete(int id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-} 
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("id"));
+        user.setUsername(rs.getString("username"));
+        user.setEmail(rs.getString("email"));
+        user.setPasswordHash(rs.getString("passwordHash"));
+        try { user.setType(rs.getString("type")); } catch (Exception ignored) {}
+        return user;
+    }
+    
+    public User read(int id) {
+        return findById(id);
+    }
+}
+

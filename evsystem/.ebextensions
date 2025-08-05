@@ -1,0 +1,6 @@
+files:
+  "/var/app/data/vehicles.db":
+    mode: "644"
+    owner: webapp
+    group: webapp
+    source: "/var/app/current/WEB-INF/data/vehicles.db"
