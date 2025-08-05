@@ -74,6 +74,7 @@
           },
           error: function(xhr){
             $("#message").css("color", "red").text((xhr.responseText || "Try a different username/email."));
+            $("#registerBtn").prop("disabled", false);
           }
         });
       });
