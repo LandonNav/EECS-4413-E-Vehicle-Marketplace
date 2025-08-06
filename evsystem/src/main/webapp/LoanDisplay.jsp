@@ -4,6 +4,7 @@
 <html>
 <head>
 	<title>Loan Calculator</title>
+        <link rel="stylesheet" href="style2.css">
 </head>
 
 <body>
@@ -27,4 +28,5 @@
 	</div>
     </main> 
 </body>
+
 </html>
