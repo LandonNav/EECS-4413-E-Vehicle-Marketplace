@@ -1,15 +1,27 @@
 <!DOCTYPE html>
-<!--Author: Rucheng Yao, Description: Catalog page for EV System-->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vehicle Catalog</title>
+  <link rel="stylesheet" href="style7.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    .slider-container {
+      margin: 10px 0;
+    }
+    .slider-values {
+      margin-left: 10px;
+    }
+    input[type=range] {
+      width: 200px;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>Vehicle Catalog</h1> <!-- Page heading -->
+    <h1>Vehicle Catalog</h1>
+    
     <nav>
       <a href="signin.html">Sign In</a>
       <a href="register.html">Register</a>
@@ -22,9 +34,31 @@
       <span id="userStatus"></span>
     </div>
   </header>
+
   <div class="container">
     <input type="text" id="search" placeholder="Search vehicles...">
     <button id="searchBtn">Search</button>
+
+    <!-- Price Range Slider -->
+    <div id="priceFilter" class="slider-container">
+      <label>Min Price: <input type="range" id="minPrice" min="0" max="100000" value="0" step="1000"></label>
+      <span class="slider-values" id="minVal">0</span><br/>
+      <label>Max Price: <input type="range" id="maxPrice" min="0" max="100000" value="100000" step="1000"></label>
+      <span class="slider-values" id="maxVal">100000</span>
+      <br>
+      <button id="filterBtn">Apply Price Filter</button>
+    </div>
+
+    <!-- Sort by Price -->
+    <div id="sortContainer" style="margin:10px 0;">
+      <label for="sortSelect">Sort by: </label>
+      <select id="sortSelect">
+        <option value="">-- Select --</option>
+        <option value="lowToHigh">Price: Low to High</option>
+        <option value="highToLow">Price: High to Low</option>
+      </select>
+    </div>
+
     <button id="compareBtn" disabled>Compare Selected</button>
     <div id="message" style="margin:10px 0;"></div>
     <table id="vehicleTable" border="1">
@@ -37,61 +71,80 @@
         <th>Rating</th>
         <th>Action</th>
       </tr>
-      <!-- Vehicle rows go here -->
     </table>
   </div>
-  <!-- Details modal -->
+
+  <!-- Details Modal -->
   <div id="detailsModal" style="display:none; position:fixed; top:15%; left:25%; background:#fff; border:1px solid #000; padding:20px; z-index:10;">
     <div id="detailsContent"></div>
     <button onclick="$('#detailsModal').hide();">Close</button>
   </div>
-  <!-- Compare modal -->
+
+  <!-- Compare Modal -->
   <div id="compareModal" style="display:none; position:fixed; top:10%; left:10%; background:#fff; border:1px solid #000; padding:20px; z-index:11;">
     <div id="compareContent"></div>
     <button onclick="$('#compareModal').hide();">Close</button>
   </div>
+
   <footer>
-    <p>© 2025 Electric Vehicle System</p> <!-- Footer -->
+    <p>© 2025 Electric Vehicle System</p>
   </footer>
 
   <script>
-    var vehicles = []; // Store loaded vehicles
+    var vehicles = [];
 
     $(document).ready(function(){
-    $.ajax({
-      url: "/api/auth/status",
-      type: 'GET',
-      success: function(data) {
-        if (data.signedIn) {
-          $("#signoutBtn").show();
-          $("#userStatus").text("Logged in");
-          if (data.userId) {
-            localStorage.setItem('userId', data.userId);
-          }
-        } else {
-          $("#signoutBtn").hide();
-          $("#userStatus").text("Not signed in");
-        }
-      }
-    });
-
-    $("#signoutBtn").click(function() {
+      // Auth check
       $.ajax({
-        url: "/api/auth/signout",
-        type: 'POST',
-        success: function() {
-          window.location.href = "signin.html";
+        url: "/api/auth/status",
+        type: 'GET',
+        success: function(data) {
+          if (data.signedIn) {
+            $("#signoutBtn").show();
+            $("#userStatus").text("Logged in");
+            if (data.userId) localStorage.setItem('userId', data.userId);
+          } else {
+            $("#signoutBtn").hide();
+            $("#userStatus").text("Not signed in");
+          }
         }
       });
-    });
-      loadVehicles(); // Load vehicles on page load
 
-      $("#searchBtn").on("click", function(){
-        var query = $("#search").val();
-        loadVehicles(query); // Search vehicles
+      $("#signoutBtn").click(function() {
+        $.ajax({
+          url: "/api/auth/signout",
+          type: 'POST',
+          success: function() {
+            window.location.href = "signin.html";
+          }
+        });
       });
 
-      // Compare button
+      loadVehicles();
+
+      // Update slider value displays
+      $("#minPrice, #maxPrice").on("input", function() {
+        $("#minVal").text($("#minPrice").val());
+        $("#maxVal").text($("#maxPrice").val());
+      });
+
+      // Search + Filter
+      $("#searchBtn").on("click", function(){
+        loadVehicles($("#search").val(), true);
+      });
+
+      $("#filterBtn").on("click", function() {
+        applyFilterAndSort();
+      });
+
+      $("#sortSelect").on("change", function() {
+        applyFilterAndSort();
+      });
+
+      $(document).on("change", "input.vehicleSelect", function(){
+        $("#compareBtn").prop("disabled", $("input.vehicleSelect:checked").length < 2);
+      });
+
       $("#compareBtn").on("click", function(){
         var selected = [];
         $("input.vehicleSelect:checked").each(function(){
@@ -106,25 +159,24 @@
         showCompare(selected);
       });
 
-      // Enable compare button when at least two are checked
-      $(document).on("change", "input.vehicleSelect", function(){
-        $("#compareBtn").prop("disabled", $("input.vehicleSelect:checked").length < 2);
-      });
-
-      // Ajax: fetch vehicles
-      function loadVehicles(searchQuery) {
+      function loadVehicles(searchQuery, applyFilter = false) {
         $("#message").text("");
         var url = "/api/vehicles";
         if (searchQuery && searchQuery.trim() !== "") {
-          url += "?search=" + encodeURIComponent(searchQuery); // With search param
+          url += "?search=" + encodeURIComponent(searchQuery);
         }
+
         $.ajax({
           url: url,
           type: 'GET',
           dataType: 'json',
           success: function(result){
             vehicles = result;
-            renderTable(result);
+            if (applyFilter) {
+              applyFilterAndSort();
+            } else {
+              renderTable(result);
+            }
           },
           error: function(){
             $("#message").css("color", "red").text("Failed to load vehicles.");
@@ -132,50 +184,63 @@
         });
       }
 
-      // Render table rows
+      function applyFilterAndSort() {
+        const min = parseFloat($("#minPrice").val());
+        const max = parseFloat($("#maxPrice").val());
+
+        let filtered = vehicles.filter(v => {
+          const price = parseFloat(v.price);
+          return (!isNaN(price) && price >= min && price <= max);
+        });
+
+        const sortOption = $("#sortSelect").val();
+        if (sortOption === "lowToHigh") {
+          filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        } else if (sortOption === "highToLow") {
+          filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        }
+
+        renderTable(filtered);
+      }
+
       function renderTable(list) {
         var table = $("#vehicleTable");
         table.find("tr:gt(0)").remove();
         if(list.length === 0){
           $("#message").css("color", "orange").text("No vehicles found.");
+        } else {
+          $("#message").text("");
         }
+
         list.forEach(function(vehicle){
           var row = $("<tr></tr>");
-          // Select for compare
           row.append($("<td></td>").append($('<input type="checkbox" class="vehicleSelect">').data("id", vehicle.id)));
           row.append($("<td></td>").text(vehicle.id));
           row.append($("<td></td>").text(vehicle.model));
           row.append($("<td></td>").text(vehicle.type));
           row.append($("<td></td>").text(vehicle.price));
-          // Rating
+
           var stars = $("<span></span>");
           var rating = Math.round(vehicle.rating || 0);
           for(var i=1;i<=5;i++){
             var star = $("<span>").text(i <= rating ? "★" : "☆").css("cursor", "pointer");
-            // Rate vehicle
             (function(i){
               star.on("click", function(){ rateVehicle(vehicle.id, i); });
             })(i);
             stars.append(star);
           }
           row.append($("<td></td>").append(stars));
-          // Action buttons
+
           var actions = $("<td></td>");
-          // Details
           var detailsBtn = $("<button>Details</button>").on("click", function(){ showDetails(vehicle.id); });
-          actions.append(detailsBtn).append(" ");
-          // Add to Cart
           var addBtn = $("<button>Add to Cart</button>").on("click", function(){ addToCart(vehicle.id); });
-          actions.append(addBtn).append(" ");
-          // Add to Wishlist
-          var wishBtn = $("<button>Add to Wishlist</button>").on("click", function(){ addToWishlist(vehicle.id); });
-          actions.append(wishBtn);
+          actions.append(detailsBtn).append(" ").append(addBtn);
           row.append(actions);
+
           table.append(row);
         });
       }
 
-      // Vehicle details modal
       function showDetails(id) {
         var vehicle = vehicles.find(v => v.id == id);
         if(!vehicle) return;
@@ -189,7 +254,6 @@
         $("#detailsModal").show();
       }
 
-      // Compare vehicles modal
       function showCompare(list) {
         var html = "<h3>Compare Vehicles</h3><table border='1'><tr><th>Field</th>";
         list.forEach(v => { html += `<th>${v.model}</th>`; });
@@ -204,7 +268,6 @@
         $("#compareModal").show();
       }
 
-      // Add vehicle to cart
       function addToCart(id) {
         var userId = localStorage.getItem('userId') || 'guest';
         $.ajax({
@@ -222,24 +285,6 @@
         });
       }
 
-      // Add to wishlist
-      function addToWishlist(id) {
-        $.ajax({
-          url: "/api/wishlist",
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({vehicleId: id}),
-          success: function(){
-            $("#message").css("color", "green").text("Added to wishlist!");
-            setTimeout(function() { $("#message").text(""); }, 1200);
-          },
-          error: function(){
-            $("#message").css("color", "red").text("Failed to add to wishlist.");
-          }
-        });
-      }
-
-      // Rate vehicle
       function rateVehicle(id, stars) {
         $.ajax({
           url: "/api/vehicles/"+id+"/rate",
@@ -247,17 +292,16 @@
           contentType: 'application/json',
           data: JSON.stringify({rating: stars}),
           success: function(){
-            alert("Added to cart!"); // Confirm add
-            loadVehicles($("#search").val()); // Reload to update rating
+            alert("Rating submitted!");
+            loadVehicles($("#search").val(), true);
           },
           error: function(){
-            alert("Failed to add to cart."); // Error add
+            alert("Failed to submit rating.");
           }
         });
       }
 
-      // Clear message on typing in search
-      $("#search").on("input", function() { $("#message").text(""); });      
+      $("#search").on("input", function() { $("#message").text(""); });
     });
   </script>
 </body>
