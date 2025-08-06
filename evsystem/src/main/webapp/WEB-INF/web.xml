@@ -68,6 +68,7 @@
 		<welcome-file>default.html</welcome-file>
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
+	        <welcome-file>catalog.html</welcome-file>
 		<welcome-file>signin.html</welcome-file>
 		<welcome-file>calculator.html</welcome-file>
 	</welcome-file-list>
@@ -85,3 +86,4 @@
 		<param-value>1</param-value> 
 	</context-param>
 </web-app>
+
