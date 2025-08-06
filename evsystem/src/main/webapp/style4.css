@@ -1,0 +1,306 @@
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* Header Styles */
+header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+/* Navigation Styles */
+nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: #34495e;
+}
+
+/* User Controls */
+#user-controls {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+#signoutBtn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#signoutBtn:hover {
+  background-color: #c0392b;
+}
+
+/* Container Styles */
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Table Styles */
+#cartTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#cartTable th, #cartTable td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+#cartTable th {
+  background-color: #3498db;
+  color: white;
+  font-weight: bold;
+}
+
+#cartTable tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+#cartTable tr:hover {
+  background-color: #e3f2fd;
+}
+
+/* Remove Button */
+#cartTable button {
+  padding: 0.3rem 0.6rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#cartTable button:hover {
+  background-color: #c0392b;
+}
+
+/* Total and Checkout Styles */
+#total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 1rem 0;
+  text-align: right;
+}
+
+#checkoutBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  float: right;
+  margin-bottom: 2rem;
+}
+
+#checkoutBtn:hover {
+  background-color: #27ae60;
+}
+
+/* Error Message */
+#error {
+  padding: 0.5rem;
+  clear: both;
+}
+
+/* Loan Estimation Section */
+.container > div {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.container > div h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+input[type="number"], input[type="text"] {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100px;
+}
+
+#estimateLoanBtn {
+  padding: 0.5rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 1rem;
+}
+
+#estimateLoanBtn:hover {
+  background-color: #2980b9;
+}
+
+#loanResult {
+  font-size: 1.1rem;
+  padding: 0.5rem 0;
+}
+
+/* Payment Modal */
+#paymentModal {
+  width: 400px;
+  max-width: 90%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+#paymentModal h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+#paymentForm label {
+  display: block;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+#paymentForm input {
+  width: calc(100% - 20px);
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 0.3rem;
+}
+
+#paymentForm button[type="submit"] {
+  padding: 0.5rem 1rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#paymentForm button[type="submit"]:hover {
+  background-color: #27ae60;
+}
+
+#closePaymentModal {
+  padding: 0.5rem 1rem;
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#closePaymentModal:hover {
+  background-color: #7f8c8d;
+}
+
+#paymentError {
+  padding: 0.5rem 0;
+}
+
+/* Footer Styles */
+footer {
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  clear: both;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  nav {
+    margin-top: 1rem;
+  }
+  
+  #cartTable {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  #checkoutBtn {
+    width: 100%;
+    float: none;
+  }
+  
+  .container > div {
+    padding: 1rem;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  input[type="number"], input[type="text"] {
+    width: 100%;
+  }
+  
+  #estimateLoanBtn {
+    margin-left: 0;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+  
+  #paymentModal {
+    left: 5% !important;
+    width: 90%;
+  }
+}

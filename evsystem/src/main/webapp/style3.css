@@ -1,0 +1,246 @@
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* Header Styles */
+header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+/* Navigation Styles */
+nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: #34495e;
+}
+
+/* User Controls */
+#user-controls {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+#signoutBtn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#signoutBtn:hover {
+  background-color: #c0392b;
+}
+
+/* Container Styles */
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Search Bar Styles */
+#search {
+  padding: 0.5rem;
+  width: 300px;
+  max-width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+}
+
+#searchBtn, #compareBtn {
+  padding: 0.5rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#searchBtn:hover, #compareBtn:hover {
+  background-color: #2980b9;
+}
+
+#compareBtn:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Message Styles */
+#message {
+  padding: 0.5rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+/* Table Styles */
+#vehicleTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#vehicleTable th, #vehicleTable td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+#vehicleTable th {
+  background-color: #3498db;
+  color: white;
+  font-weight: bold;
+}
+
+#vehicleTable tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+#vehicleTable tr:hover {
+  background-color: #e3f2fd;
+}
+
+/* Star Rating Styles */
+#vehicleTable td span span {
+  color: #f1c40f;
+  font-size: 1.2rem;
+  margin-right: 2px;
+}
+
+/* Button Styles in Table */
+#vehicleTable button {
+  padding: 0.3rem 0.6rem;
+  margin: 0 0.2rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#vehicleTable button:nth-of-type(1) { /* Details button */
+  background-color: #3498db;
+  color: white;
+}
+
+#vehicleTable button:nth-of-type(2) { /* Add to Cart button */
+  background-color: #2ecc71;
+  color: white;
+}
+
+#vehicleTable button:nth-of-type(3) { /* Wishlist button */
+  background-color: #9b59b6;
+  color: white;
+}
+
+#vehicleTable button:hover {
+  opacity: 0.9;
+}
+
+/* Modal Styles */
+#detailsModal, #compareModal {
+  width: 70%;
+  max-width: 800px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  border-radius: 8px;
+}
+
+#detailsModal button, #compareModal button {
+  padding: 0.5rem 1rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+#detailsModal button:hover, #compareModal button:hover {
+  background-color: #c0392b;
+}
+
+#compareModal table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+#compareModal th, #compareModal td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+}
+
+#compareModal th {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Footer Styles */
+footer {
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  nav {
+    margin-top: 1rem;
+  }
+  
+  #search {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  #vehicleTable {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  #detailsModal, #compareModal {
+    width: 90%;
+    left: 5% !important;
+  }
+}
